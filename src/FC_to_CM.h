@@ -14,7 +14,6 @@ class FC_to_CM {
 private:
   XBeeAPIParser _xbee;
   uint32_t _timeout;
-  //uint64_t _cmAddress;
 
   //RTOS management
   Mutex _data_mutex;
@@ -31,30 +30,34 @@ private:
   bool _goodClock;
   char _rsvpState;
 
-  uint8_t _dataTransmitSize;
-  char _incompleteDataSet[MAX_POD_DATA_BYTES];
-  uint8_t _incDataIndex;
-  char _completeDataSet[MAX_POD_DATA_BYTES];
-  void _transferIncDataToCData();
-  bool _readyToSendData;
+  uint8_t _dataTransmitSize;                  //size of data to be transmitted, set by user, deafults to 0
+  char _partialDataSet[MAX_POD_DATA_BYTES];   //where data is stored while being collected
+  uint8_t _partialDataIndex;                  //tracks index of partial data
+  
+  char _fullDataSet[MAX_POD_DATA_BYTES];      //completed data set, will be held until a more recent partial set is completes
+  bool _readyToSendData;                      //tracks if there is data to send
+  void _transferPartialData();                //moves partail data into full data once the cartial set is completed
 
   template<typename T>
-  bool _addBytesToData(T value);
+  void _addBytesToData(T value);              //converts any data type to bytes, adds them to partial data
 
 public:
   FC_to_CM(PinName tx, PinName rx);
 
-  void setResponceDeclineResponce() { _rsvpState = 0x00;}      //set functions to change responce state, deafults to 0x00 in constructor
-  void setResponceClockOnly()       { _rsvpState = 0x01;}
-  void setResponceClockAndData()    { _rsvpState = 0x02;}
+  void setResponseDeclineResponce() { _rsvpState = 0x00;}      //set functions to change responce state, deafults to 0x00 in constructor
+  void setResponseClockOnly()       { _rsvpState = 0x01;}
+  void setResponseClockAndData()    { _rsvpState = 0x02;}
 
   char getFlightState() { return _flightState; }
 
-  void setDataTranmitSize(int size) { _dataTransmitSize = size; }
+  void setDataTransmitSize(int size) { _dataTransmitSize = size; }
 
   void saveInt(int val);
   void saveFloat(float val);
   void saveFloatAsInt(float val, int precision);
+
+  int getFullData(int index) {return _fullDataSet[index];}
+  int getPartialData(int index) {return _partialDataSet[index];}
   
 };
 

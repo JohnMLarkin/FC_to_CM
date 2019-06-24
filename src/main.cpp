@@ -10,19 +10,21 @@ FC_to_CM radio(p28,p27);
 
 
 int main() {
-  time_t thisTime;
-  radio.setResponceClockAndData();
+  int transmitSize = 4;
+  radio.setResponseClockAndData();
 
-  radio.setDataTranmitSize(4);
+  radio.setDataTransmitSize(transmitSize);
 
   radio.saveInt(17);
+  radio.saveFloat(23.4);
 
   while(1) {
     led=!led;
     wait(0.5);
     if (button) {
-      thisTime = time(NULL);
-      pc.printf("%d %s\r\n", radio.getFlightState(), ctime(&thisTime));
+      for (int i = 0; i < transmitSize; i++) {
+        pc.printf("%d: Full: %02X Partial: %02X\r\n", i, radio.getFullData(i), radio.getPartialData(i));
+      }
     }
   }
 }
