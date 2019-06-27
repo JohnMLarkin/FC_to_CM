@@ -58,7 +58,7 @@ public:
 
   int getFullData(int index) {return _fullDataSet[index];}
   int getPartialData(int index) {return _partialDataSet[index];}
-  
+  int getDataInterval() {return _dataInterval;}
 };
 
 #endif
