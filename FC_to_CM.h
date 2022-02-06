@@ -3,7 +3,6 @@
 
 #include "XBeeAPIParser.h"
 #include "mbed.h"
-#include "rtos.h"
 #include <string> 
 
 #define MAX_FC 6
@@ -12,25 +11,25 @@
 
 class FC_to_CM {
 private:
-  XBeeAPIParser _xbee;
-  uint32_t _timeout;
+  XBeeAPIParser* _xbee;
+  std::chrono::microseconds _timeout;
 
   //RTOS management
   Mutex _data_mutex;
   Thread _rx_thread;
 
-  void _listen_for_rx();                //listens for rx, then runs one of the appropriate responces below, may handle smaller tasks like switching flags 
-  void _process_invitation(uint64_t address);           //if recieved 0x00, sends 0x10
+  void _listen_for_rx();                //listens for rx, then runs one of the appropriate responses below, may handle smaller tasks like switching flags 
+  void _process_invitation(uint64_t address);           //if received 0x00, sends 0x10
   void _process_clock_set(char*);
-  void _process_clock_test(char*, uint64_t address);      //if recieved 0x21, send 0x31 
-  void _process_request_data(uint64_t address);         //if recieved 0x40, send 0x50
+  void _process_clock_test(char*, uint64_t address);      //if received 0x21, send 0x31 
+  void _process_request_data(uint64_t address);         //if received 0x40, send 0x50
 
   char _flightState;                     //stores the state of the flight from CM broadcasts--enum: preLaunch(0x00),ascent(0x01),descent(0x02),landed(0x03),labTest(0x10)
   char _dataInterval;                    //in seconds
   bool _goodClock;
   char _rsvpState;
 
-  uint8_t _dataTransmitSize;                  //size of data to be transmitted, set by user, deafults to 0
+  uint8_t _dataTransmitSize;                  //size of data to be transmitted, set by user, defaults to 0
   char _partialDataSet[MAX_POD_DATA_BYTES];   //where data is stored while being collected
   uint8_t _partialDataIndex;                  //tracks index of partial data
   
@@ -44,7 +43,7 @@ private:
 public:
   FC_to_CM(PinName tx, PinName rx);
 
-  void setResponseDeclineResponce() { _rsvpState = 0x00;}      //set functions to change responce state, deafults to 0x00 in constructor
+  void setResponseDeclineResponse() { _rsvpState = 0x00;}      //set functions to change response state, defaults to 0x00 in constructor
   void setResponseClockOnly()       { _rsvpState = 0x01;}
   void setResponseClockAndData()    { _rsvpState = 0x02;}
 
